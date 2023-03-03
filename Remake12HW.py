@@ -130,7 +130,7 @@ class Record:   #клас для запису инфи
                 self.phones.remove(oldphone)
                 self.phones.append(newphone)
 
-    def days_to_birthday(self):
+    def days_to_birthday(self):   #працюе норм, але треба допрацювати так що б була можлывисть вибрати користувача
         try:
                 
             if str(self.birthday) == None:
@@ -186,8 +186,12 @@ class AdressBook(UserDict): #адресна книга
                 return ""
         return color("Thats all!",Colors.orange)
     
-    def start(self):
+    def save(self):  # функция для зберигання данних в csv файл
         pass
+     
+     
+     def load(self):   # функция для загрузки контактив з csv файлу
+          pass
 
 
     # def find(self, value: str):

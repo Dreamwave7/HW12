@@ -1,8 +1,14 @@
 import re
+import os
 from collections import UserDict
 from datetime import datetime
+import csv
 
 from colorit import *
+
+
+os.chdir(r"C:\Users\Admin\Desktop\TestCSV") # зминыв папку, бо не зручно було коли файл зберигався незрозумило куди и в яку папку
+
 
 
 class Error(Exception):  #власне виключення
@@ -29,7 +35,7 @@ class Field:
         self._value = value
 
 
-class Name(Field):   #клас длч створення поля name
+class Name(Field):   #клас для створення поля name
 
     def __str__(self) -> str:
         self._value : str
@@ -112,16 +118,16 @@ class Record:   #клас для запису инфи
         if phone:
             self.phones.append(phone)
 
-    def add_phone(self, phone: Phone):
+    def add_phone(self, phone: Phone):  # додати телефон
         self.phones.append(phone)
 
-    def remove_phone(self, phone):
+    def remove_phone(self, phone):  # видалити телефон
         phone = Phone(phone)
         for ph in self.phones:
             if ph == phone:
                 self.phones.remove(ph)
 
-    def change_phone(self, oldphone, newphone):
+    def change_phone(self, oldphone, newphone): # зминити телефон користувача 
         oldphone = Phone(oldphone)
         newphone = Phone(newphone)
 
@@ -130,7 +136,8 @@ class Record:   #клас для запису инфи
                 self.phones.remove(oldphone)
                 self.phones.append(newphone)
 
-    def days_to_birthday(self):   #працюе норм, але треба допрацювати так що б була можлывисть вибрати користувача
+    def days_to_birthday(self):   #функция яка показуе скильки днив до наступного др
+                                  # потрибно допрацювати
         try:
                 
             if str(self.birthday) == None:
@@ -163,12 +170,12 @@ class AdressBook(UserDict): #адресна книга
     def add_record(self, record: Record):
         self.data[record.name.value] = record
 
-    def generator(self):
+    def generator(self): # генератор з yield
         for name, info in self.data.items():
             yield color(f"{name} has phone {info}",Colors.green)
 
     
-    def iterator(self, value):
+    def iterator(self, value):  # функция яка показуе килькисть контактив яку введе користувач
         value = value
         gen = self.generator()
         try:
@@ -182,26 +189,42 @@ class AdressBook(UserDict): #адресна книга
                 print(next(gen))
                 value -= 1
             except StopIteration:
-                print(color(f"Try enter value less than {value}. Dict has {len(self.data)} contacts",Colors.purple))
+                print(color(f"Try enter value less on {value}. Dict has {len(self.data)} contacts",Colors.purple))
                 return ""
         return color("Thats all!",Colors.orange)
     
-    def save(self):  # функция для зберигання данних в csv файл
-        pass
-     
-     
-     def load(self):   # функция для загрузки контактив з csv файлу
-          pass
+
+    
+    def save(self):     #функция збереження даних адресбук у csv файл
+        if len(self.data) == 0:
+            print(color("Your AddressBook is empty",Colors.red))
+        
+        with open("savebook.csv", "w", newline="") as file:
+            fields = ["Name", "Info"]
+            writer = csv.DictWriter(file, fields)
+            writer.writeheader()
+            for name, info in self.data.items():
+                name :str
+                writer.writerow({"Name": name.title(), "Info": str(info)})
+            return color("Succesfull save your AddressBook",Colors.green)
 
 
-    # def find(self, value: str):
-    #     value = value.lower()
-    #     res = ""
-    #     for name, info in self.data.items():
-    #         if value in name.lower() or value in str(info).lower():
-    #             print(color(f"Find similar contacts {name.title()} {str(info).title()}", Colors.purple))
-    #         else:
-    #             print(color(f"Dont find any matches", Colors.green))
+
+    def load(self):  # функция яка завантажуе контакти з збереженого csv файлу, якшо такого нема буде про це повидомлено
+        try: 
+            with open("savebook.csv", "r", newline="") as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    saved = {row["Name"]: row["Info"]}
+                    self.data.update(saved)
+
+                print(color("\nSuccesfull load saved AddressBook", Colors.purple))
+        except:
+            print(color("\nDont exist file with saving contacts",Colors.blue))
+        return ""
+        
+
+
 
 
     def find(self, value: str):     #функция для пошуку по имя або телефону
@@ -225,22 +248,22 @@ birth = Birthday("2001.08.12")
 rec = Record(name, phone, birth)
 ad = AdressBook()
 ad.add_record(rec)
-
-
+#=============================================================================
 name1 = Name("Benderovec")
 phone1 = Phone("0993790447")
 birth1 = Birthday("2001.08.12")
 rec1 = Record(name1, phone1, birth1)
 ad.add_record(rec1)
-
+#=============================================================================
 # print(rec.days_to_birthday())
-
+#=============================================================================
 name2 = Name("Diana")
 phone2 = Phone("099797484")
 birth2 = Birthday("2003.04.01")
 rec2 = Record(name2, phone2, birth2)
-
+#============================================================================
 ad.add_record(rec2)
+print(ad.load())
 
-
-print(ad.find("di"))
+# print(ad.iterator(6))
+# print(ad.find("test"))
